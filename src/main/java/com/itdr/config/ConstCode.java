@@ -32,7 +32,16 @@ public class ConstCode {
         FORCE_EXIT(22, "用户未登录，无法获取当前用户信息"),
         LOGOUT(23, "退出成功"),
         FAIL_LOGIN(24,"登录失败"),
-        FAIL_USER(25, "用户注册失败");
+        FAIL_USER(25, "用户注册失败"),
+        EMPTY_USERNAMEOREMAIL(26, "用户名或邮箱不能为空"),
+        EXIST_USEROREMAIL(27, "用户名或邮箱已存在"),
+        EMPTY_TYPE(28, "类型不能为空"),
+        EMPTY_EMAIL(29, "邮箱不能为空"),
+        EMPTY_PHONE(30, "手机号不能为空"),
+        FAIL_USERMSG(31, "更新个人信息失败"),
+        EMPTY_TOKEN(32, "token不能为空"),
+        EMPTY_PASSWORDOLD(33, "旧密码不能为空"),
+        EMPTY_PASSWORDNEW(34, "新密码不能为空");
 
         private int code;
         private String desc;

@@ -32,14 +32,35 @@
       where username = #{param1} and password = #{param2}
     </select>
     <!--根据用户名查找用户是否存在-->
-  <select id="selectByUserName" parameterType="string" resultType="java.lang.Integer">
+  <select id="selectByUserName" parameterType="string" resultMap="BaseResultMap">
     select
-    count(id)
+    <include refid="Base_Column_List" />
     from rlg_user
     where username = #{username}
   </select>
+  <!--根据用户名或者邮箱查询用户-->
+  <select id="selectByUserNameOrEmail"  resultType="java.lang.Integer">
+    select
+    count(id)
+    from rlg_user
+    <where>
+      <if test="type == 'username' ">
+        username = #{str}
+      </if>
+      <if test="type == 'email' ">
+        email = #{str}
+      </if>
+    </where>
+  </select>
+  <!--根据用户名和密保问题和答案查询数据是否存在-->
+  <select id="selectByUserNameAndQuestionAndAnswer" resultType="java.lang.Integer">
+    select
+    count(id)
+    from rlg_user
+    where username = #{username} and question =#{question} and answer = #{answer}
+  </select>
 
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from rlg_user
     where id = #{id,jdbcType=INTEGER}
   </delete>
@@ -135,27 +156,24 @@
       <if test="password != null" >
         password = #{password,jdbcType=VARCHAR},
       </if>
-      <if test="email != null" >
+      <if test="email != null and email != ''" >
         email = #{email,jdbcType=VARCHAR},
       </if>
-      <if test="phone != null" >
+      <if test="phone != null and phone != ''" >
         phone = #{phone,jdbcType=VARCHAR},
       </if>
-      <if test="question != null" >
+      <if test="question != null and question != ''" >
         question = #{question,jdbcType=VARCHAR},
       </if>
-      <if test="answer != null" >
+      <if test="answer != null and answer != ''" >
         answer = #{answer,jdbcType=VARCHAR},
       </if>
       <if test="role != null" >
         role = #{role,jdbcType=INTEGER},
       </if>
-      <if test="createTime != null" >
-        create_time = #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="updateTime != null" >
-        update_time = #{updateTime,jdbcType=TIMESTAMP},
-      </if>
+
+        update_time = now(),
+
       <if test="ip != null" >
         ip = #{ip,jdbcType=VARCHAR},
       </if>
@@ -175,5 +193,21 @@
       update_time = #{updateTime,jdbcType=TIMESTAMP},
       ip = #{ip,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
+  </update>
+  <!--根据用户名修改密码-->
+  <update id="updateByUserNameAndPasswordNew">
+    update rlg_user
+    set
+      password = #{passwordNew,jdbcType=VARCHAR},
+      update_time = now()
+    where username = #{username}
+  </update>
+  <!--根据用户名和旧密码修改密码-->
+  <update id="updateByUserNameAndPasswordOldAndPasswordNew">
+    update rlg_user
+    set
+      password = #{passwordNew,jdbcType=VARCHAR},
+      update_time = now()
+    where username = #{username} and password = #{passwordOld}
   </update>
 </mapper>
