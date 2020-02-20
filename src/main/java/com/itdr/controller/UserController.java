@@ -3,7 +3,7 @@ package com.itdr.controller;
 import com.itdr.common.ServerResponse;
 import com.itdr.config.ConstCode;
 import com.itdr.pojo.User;
-import com.itdr.pojo.bo.UserVO;
+import com.itdr.pojo.vo.UserVO;
 import com.itdr.service.UserService;
 import com.itdr.utils.ObjectToVOUtil;
 import org.springframework.beans.factory.annotation.Autowired;

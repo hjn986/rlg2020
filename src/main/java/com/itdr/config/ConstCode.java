@@ -1,5 +1,7 @@
 package com.itdr.config;
 
+import com.itdr.pojo.Product;
+
 public class ConstCode {
 
     public final static int DEFAULT_SUCCESS=200;
@@ -51,6 +53,36 @@ public class ConstCode {
             this.desc = desc;
         }
 
+        public int getCode() {
+            return code;
+        }
+
+        public void setCode(int code) {
+            this.code = code;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
+
+        public void setDesc(String desc) {
+            this.desc = desc;
+        }
+    }
+
+    public enum ProductEnum{
+
+        //状态信息
+        UNLAWFULNESS_PARAM(1, "非法参数"),
+        INEXISTENCE_PRODUCT(2, "商品不存在");
+
+        private int code;
+        private String desc;
+
+        private ProductEnum(int code,String desc){
+            this.code = code;
+            this.desc = desc;
+        }
         public int getCode() {
             return code;
         }
