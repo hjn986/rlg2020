@@ -49,7 +49,7 @@ public class ProductServiceImpl implements ProductService {
                     ConstCode.ProductEnum.UNLAWFULNESS_PARAM.getCode(),
                     ConstCode.ProductEnum.UNLAWFULNESS_PARAM.getDesc());
         }
-        //根据父id查找直接子类
+        //根据商品id查找商品数据
         Product product= productMapper.selectByPrimaryKey(productId);
         if (product == null || product.getStatus() != 1){
             return ServerResponse.defeatedRS(
@@ -58,7 +58,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         //封装VO
-        ProductVO productVO = ObjectToVOUtil.ProductToUserVO(product);
+        ProductVO productVO = ObjectToVOUtil.productToUserVO(product);
 
         //返回成功数据
         return ServerResponse.successRS(productVO);
@@ -73,21 +73,23 @@ public class ProductServiceImpl implements ProductService {
                     ConstCode.DEFAULT_FAIL,
                     "参数不能为空");
         }
+        //模糊查询数据
+        String keyWord = "%"+word+"%";
         //排序参数处理
         String[] split = new String[2];
         if (!StringUtils.isEmpty(orderBy)){
             split = orderBy.split("_");
+            PageHelper.startPage(pageNum,pageSize,split[0]+" "+split[1]);
+        }else{
+            PageHelper.startPage(pageNum,pageSize);
         }
-        //模糊查询数据
-        String keyWord = "%"+word+"%";
         //开启分页
-        PageHelper.startPage(pageNum,pageSize,split[0]+" "+split[1]);
         List<Product> li = productMapper.selectByName(keyWord);
         PageInfo pageInfo = new PageInfo(li);
         //封装VO
         List<ProductVO> liNew = new ArrayList<ProductVO>();
         for (Product product : li) {
-            ProductVO pvo = ObjectToVOUtil.ProductToUserVO(product);
+            ProductVO pvo = ObjectToVOUtil.productToUserVO(product);
             liNew.add(pvo);
         }
         pageInfo.setList(liNew);

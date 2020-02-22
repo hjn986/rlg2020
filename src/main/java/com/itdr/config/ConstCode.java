@@ -6,6 +6,7 @@ public class ConstCode {
 
     public final static int DEFAULT_SUCCESS=200;
     public final static int DEFAULT_FAIL=100;
+    public final static String UNLAWFULNESS_PARAM = "非法参数";
 
     public enum UserEnum {
 
@@ -74,12 +75,44 @@ public class ConstCode {
 
         //状态信息
         UNLAWFULNESS_PARAM(1, "非法参数"),
-        INEXISTENCE_PRODUCT(2, "商品不存在");
+        INEXISTENCE_PRODUCT(2, "商品不存在"),
+        BEYOND_STOCK(3,"商品超出库存");
 
         private int code;
         private String desc;
 
         private ProductEnum(int code,String desc){
+            this.code = code;
+            this.desc = desc;
+        }
+        public int getCode() {
+            return code;
+        }
+
+        public void setCode(int code) {
+            this.code = code;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
+
+        public void setDesc(String desc) {
+            this.desc = desc;
+        }
+    }
+
+    public enum CartEnum{
+
+        //状态信息
+        EMPTY_CART(1, "购物车竟然是空的"),
+        FAIL_ADDPRODUCT(2,"添加商品失败");
+
+
+        private int code;
+        private String desc;
+
+        private CartEnum(int code,String desc){
             this.code = code;
             this.desc = desc;
         }

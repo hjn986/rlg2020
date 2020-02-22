@@ -67,7 +67,7 @@ public class UserController {
     @RequestMapping("get_user_info.do")
     public ServerResponse<User> getUserInfo(HttpSession session) {
         User user = (User)session.getAttribute("user");
-        UserVO userVO = ObjectToVOUtil.UserToUserVO(user);
+        UserVO userVO = ObjectToVOUtil.userToUserVO(user);
         return ServerResponse.successRS(userVO);
 
     }
