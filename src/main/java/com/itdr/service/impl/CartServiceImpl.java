@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -115,7 +116,7 @@ public class CartServiceImpl implements CartService {
             }else{
                 cart.setQuantity(count);
                 int i = cartMapper.updateByPrimaryKey(cart);
-                if (i <=0){
+                if (i <= 0){
                     return ServerResponse.defeatedRS(
                             ConstCode.CartEnum.FAIL_ADDPRODUCT.getCode(),
                             ConstCode.CartEnum.FAIL_ADDPRODUCT.getDesc());
@@ -131,5 +132,37 @@ public class CartServiceImpl implements CartService {
         }
         CartVO cartVO = getCartVO(carList.getData());
         return ServerResponse.successRS(cartVO);
+    }
+
+    @Override
+    public ServerResponse<CartVO> update(Integer productId, Integer count,Integer id) {
+        //参数非空判断
+        if (productId == null || productId <=0 || count == null || count <=0){
+            return ServerResponse.defeatedRS("非法参数");
+        }
+        //如果有这条购物信息，就只更新数量
+        Cart cart = cartMapper.selectByUserIDAndProductID(id, productId);
+        //更新数据
+        cart.setQuantity(count);
+        int i = cartMapper.updateByPrimaryKeySelective(cart);
+        return ServerResponse.successRS(count);
+    }
+
+    @Override
+    public ServerResponse<CartVO> deleteProduct(String productIds, Integer id) {
+        if (productIds == null || ("").equals(productIds)){
+            return ServerResponse.defeatedRS("非法参数");
+        }
+        //把字符串中的数据放到集合中
+        String[] split = productIds.split(",");
+        List<String> strings = Arrays.asList(split);
+        int i  = cartMapper.deleteByProduct(strings,id);
+        return ServerResponse.successRS(id);
+    }
+
+    @Override
+    public ServerResponse<CartVO> select(Integer id, Integer productId, Integer check) {
+        int i = cartMapper.selectOrUnselect(id,productId,check);
+        return ServerResponse.successRS(id);
     }
 }

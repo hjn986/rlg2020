@@ -34,11 +34,25 @@
     where user_id = #{userId,jdbcType=INTEGER} and product_Id =#{productId}
   </select>
 
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from rlg_cart
     where id = #{id,jdbcType=INTEGER}
   </delete>
-    <!--增加购物车信息-->
+  <!--购物车删除商品-->
+  <delete id="deleteByProduct">
+    delete from rlg_cart
+    <where>
+      user_id = #{id}
+      <if test="productIds != null">
+        and product_id in
+        <foreach collection="productIds" item="productId" open="(" separator="," close=")">
+          #{productId}
+        </foreach>
+      </if>
+    </where>
+  </delete>
+  <!--增加购物车信息-->
     <insert id="insert" parameterType="com.itdr.pojo.Cart" >
     insert into rlg_cart (id, user_id, product_id, 
       quantity, checked, create_time, 
@@ -99,33 +113,30 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.itdr.pojo.Cart" >
     update rlg_cart
     <set >
-      <if test="userId != null" >
-        user_id = #{userId,jdbcType=INTEGER},
-      </if>
-      <if test="productId != null" >
-        product_id = #{productId,jdbcType=INTEGER},
-      </if>
       <if test="quantity != null" >
         quantity = #{quantity,jdbcType=INTEGER},
       </if>
-      <if test="checked != null" >
-        checked = #{checked,jdbcType=INTEGER},
-      </if>
-      <if test="createTime != null" >
-        create_time = #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="updateTime != null" >
-        update_time = #{updateTime,jdbcType=TIMESTAMP},
-      </if>
+        update_time = now()
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
+
   <!--更新购物车中商品数量-->
   <update id="updateByPrimaryKey" parameterType="com.itdr.pojo.Cart" >
     update rlg_cart
-    set quantity = #{quantity,jdbcType=INTEGER},
-        update_time = now()
+    set quantity = #{quantity,jdbcType=INTEGER},update_time = now()
     where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!--商品是否选中-->
+  <update id="selectOrUnselect" parameterType="map">
+    update rlg_cart
+    set
+    check = #{check,jdbcType=INTEGER},update_time = now()
+    where user_id = #{id,jdbcType=INTEGER}
+    <if test="productId != null" >
+      and product_id = #{productId}
+    </if>
   </update>
 
 </mapper>
