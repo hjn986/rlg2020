@@ -22,7 +22,11 @@ public interface CartMapper {
 
     Cart selectByUserIDAndProductID(@Param("userId") Integer uid,@Param("productId") Integer productId);
 
-    int deleteByProduct(List<String> strings, Integer id);
+    int deleteByUserIdAndProductId(@Param("userId") Integer uid,@Param("productId") Integer productId);
 
-    int selectOrUnselect(Integer id, Integer productId, Integer check);
+    int deleteByUserIdAndChecked(Integer uid);
+
+    int updateByUserIdOrProductId(@Param("userId") Integer uid,
+                                  @Param("productId") Integer productId,
+                                  @Param("type")Integer type);
 }

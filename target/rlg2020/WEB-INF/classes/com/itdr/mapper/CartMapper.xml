@@ -39,18 +39,16 @@
     delete from rlg_cart
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <!--购物车删除商品-->
-  <delete id="deleteByProduct">
+
+  <!--购物车删除一条信息-->
+  <delete id="deleteByUserIdAndProductId">
     delete from rlg_cart
-    <where>
-      user_id = #{id}
-      <if test="productIds != null">
-        and product_id in
-        <foreach collection="productIds" item="productId" open="(" separator="," close=")">
-          #{productId}
-        </foreach>
-      </if>
-    </where>
+    where user_id = #{userId,jdbcType=INTEGER} and product_id = #{productId}
+  </delete>
+  <!--删除购物车中全部选中数据-->
+  <delete id="deleteByUserIdAndChecked">
+    delete from rlg_cart
+    where user_id = #{uid,jdbcType=INTEGER} and checked = 1
   </delete>
   <!--增加购物车信息-->
     <insert id="insert" parameterType="com.itdr.pojo.Cart" >
@@ -127,16 +125,17 @@
     set quantity = #{quantity,jdbcType=INTEGER},update_time = now()
     where id = #{id,jdbcType=INTEGER}
   </update>
-
-  <!--商品是否选中-->
-  <update id="selectOrUnselect" parameterType="map">
+  <!--更新商品选中状态-->
+  <update id="updateByUserIdOrProductId">
     update rlg_cart
-    set
-    check = #{check,jdbcType=INTEGER},update_time = now()
-    where user_id = #{id,jdbcType=INTEGER}
-    <if test="productId != null" >
-      and product_id = #{productId}
-    </if>
+    set checked = #{type},update_time = now()
+    <where>
+      <if test="productId != null">
+        product_id = #{productId,jdbcType=INTEGER}
+      </if>
+      and user_id =#{userId}
+    </where>
   </update>
+
 
 </mapper>

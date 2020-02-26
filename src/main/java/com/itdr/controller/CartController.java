@@ -40,56 +40,102 @@ public class CartController {
      * 购物车添加商品
      * @param productId
      * @param count
+     * @param type
      * @param session
      * @return
      */
     @RequestMapping("add.do")
     public ServerResponse add(Integer productId,
                               @RequestParam(value = "count",required = false,defaultValue = "1") Integer count,
+                              @RequestParam(value = "type",required = false,defaultValue = "0") Integer type,
                               HttpSession session){
         User user = (User) session.getAttribute("user");
         if (user == null){
             return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,
                     ConstCode.UserEnum.NO_LOGIN.getDesc());
         }
-        return cartService.add(productId,count,user);
+        return cartService.add(productId,user,count,type);
     }
 
     /**
      * 更新购物车某个产品数量
      * @param productId
      * @param count
+     * @param type
      * @param session
      * @return
      */
     @RequestMapping("update.do")
-    public ServerResponse<CartVO> update(Integer productId, Integer count,HttpSession session){
+    public ServerResponse update(Integer productId,
+                              @RequestParam(value = "count",required = false,defaultValue = "1") Integer count,
+                              @RequestParam(value = "type",required = false,defaultValue = "0") Integer type,
+                              HttpSession session){
         User user = (User) session.getAttribute("user");
         if (user == null){
             return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,
                     ConstCode.UserEnum.NO_LOGIN.getDesc());
         }
-        return cartService.update(productId,count,user.getId());
-    }
-    //删除购物车中某个商品
-    @RequestMapping("delete_product.do")
-    public ServerResponse<CartVO> deleteProduct(String productIds,HttpSession session){
-        User user = (User) session.getAttribute("user");
-        if (user == null){
-            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,
-                    ConstCode.UserEnum.NO_LOGIN.getDesc());
-        }
-        return cartService.deleteProduct(productIds,user.getId());
+        return cartService.update(productId,count,type,user);
     }
 
-    @RequestMapping("select.do")
-    public ServerResponse<CartVO> select(HttpSession session,Integer productId,Integer check){
+    /**
+     * 删除购物车中某个商品
+     * @param productId
+     * @param session
+     * @return
+     */
+    @RequestMapping("delete.do")
+    public ServerResponse delete(Integer productId,HttpSession session){
         User user = (User) session.getAttribute("user");
         if (user == null){
             return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,
                     ConstCode.UserEnum.NO_LOGIN.getDesc());
         }
-        return cartService.select(user.getId(),productId,check);
+        return cartService.delete(productId,user);
     }
+
+    /**
+     * 删除购物车中全部选中数据
+     * @param session
+     * @return
+     */
+    @RequestMapping("deleteall.do")
+    public ServerResponse deleteAll(HttpSession session){
+        User user = (User) session.getAttribute("user");
+        if (user == null){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,
+                    ConstCode.UserEnum.NO_LOGIN.getDesc());
+        }
+        return cartService.deleteAll(user);
+    }
+
+    /**
+     * 查询在购物车里的产品数量
+     * @param session
+     * @return
+     */
+    @RequestMapping("get_cart_product_count.do")
+    public ServerResponse getCartProductCount(HttpSession session){
+        User user = (User) session.getAttribute("user");
+        if (user == null){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,
+                    ConstCode.UserEnum.NO_LOGIN.getDesc());
+        }
+        return cartService.getCartProductCount(user);
+    }
+
+    @RequestMapping("checked.do")
+    public ServerResponse checked(Integer productId,
+                                  @RequestParam(value = "type",required = false,defaultValue = "0")Integer type,
+                                  HttpSession session){
+        User user = (User) session.getAttribute("user");
+        if (user == null){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,
+                    ConstCode.UserEnum.NO_LOGIN.getDesc());
+        }
+        return cartService.checked(productId,type,user);
+    }
+
+
 
 }

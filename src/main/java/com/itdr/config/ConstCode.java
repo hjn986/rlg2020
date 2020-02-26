@@ -106,7 +106,8 @@ public class ConstCode {
 
         //状态信息
         EMPTY_CART(1, "购物车竟然是空的"),
-        FAIL_ADDPRODUCT(2,"添加商品失败");
+        FAIL_ADDPRODUCT(2,"添加商品失败"),
+        CART_TYPE(0,"类型");
 
 
         private int code;

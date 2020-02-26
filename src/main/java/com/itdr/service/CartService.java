@@ -4,14 +4,20 @@ import com.itdr.common.ServerResponse;
 import com.itdr.pojo.User;
 import com.itdr.pojo.vo.CartVO;
 
+import javax.servlet.http.HttpSession;
+
 public interface CartService {
     ServerResponse list( User user);
 
-    ServerResponse add(Integer productId, Integer count, User user);
+    ServerResponse add(Integer productId, User user,Integer count,Integer type );
 
-    ServerResponse<CartVO> update(Integer productId, Integer count, Integer id);
+    ServerResponse update(Integer productId, Integer count, Integer type, User user);
 
-    ServerResponse<CartVO> deleteProduct(String productIds, Integer id);
+    ServerResponse delete(Integer productId,User user);
 
-    ServerResponse<CartVO> select(Integer id, Integer productId, Integer check);
+    ServerResponse deleteAll(User user);
+
+    ServerResponse getCartProductCount(User user);
+
+    ServerResponse checked(Integer productId,Integer type,User user);
 }

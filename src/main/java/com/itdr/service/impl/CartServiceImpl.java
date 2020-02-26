@@ -33,7 +33,7 @@ public class CartServiceImpl implements CartService {
         //获取购物车中对应的商品信息
         List<CartProductVO> cartProductVOList = new ArrayList<CartProductVO>();
         boolean bol = true;
-        BigDecimal cartTotalPrice = new BigDecimal(0);
+        BigDecimal cartTotalPrice = new BigDecimal("0");
         for (Cart cart : cartList) {
             Product product = productMapper.selectByPrimaryKey(cart.getProductId());
 
@@ -69,6 +69,16 @@ public class CartServiceImpl implements CartService {
         }
         return ServerResponse.successRS(cartList);
     }
+    //要添加的商品是否在售
+    private ServerResponse<Product> online(Integer productId ){
+        Product product = productMapper.selectByPrimaryKey(productId);
+        if (product == null || product.getStatus() != 1){
+            return ServerResponse.defeatedRS(
+                    ConstCode.ProductEnum.INEXISTENCE_PRODUCT.getCode(),
+                    ConstCode.ProductEnum.INEXISTENCE_PRODUCT.getDesc());
+        }
+        return ServerResponse.successRS(product);
+    }
 
     @Override
     public ServerResponse list( User user) {
@@ -82,20 +92,22 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public ServerResponse add(Integer productId, Integer count, User user) {
+    public ServerResponse add(Integer productId,User user, Integer count,Integer type ) {
         //参数合法判断
         if (productId == null || productId < 0){
             return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,ConstCode.UNLAWFULNESS_PARAM);
         }
+        if (count == null || count <= 0){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,ConstCode.UNLAWFULNESS_PARAM);
+        }
         //添加的商品是否在售
-        Product product = productMapper.selectByPrimaryKey(productId);
-        if (product == null || product.getStatus() != 1){
-            return ServerResponse.defeatedRS(
-                ConstCode.ProductEnum.INEXISTENCE_PRODUCT.getCode(),
-                ConstCode.ProductEnum.INEXISTENCE_PRODUCT.getDesc());
-    }
+
+       ServerResponse<Product> online = online(productId);
+        if (!online.isSuccess()){
+            return online;
+        }
         //添加的商品数量是否超过库存
-        if (count >product.getStock()){
+        if (count >online.getData().getStock()){
             return ServerResponse.defeatedRS(
                     ConstCode.ProductEnum.BEYOND_STOCK.getCode(),
                     ConstCode.ProductEnum.BEYOND_STOCK.getDesc());
@@ -105,7 +117,7 @@ public class CartServiceImpl implements CartService {
         c.setUserId(user.getId());
         c.setProductId(productId);
         c.setQuantity(count);
-
+        //查询要增加的数据是否已经存在
         Cart cart = cartMapper.selectByUserIDAndProductID(user.getId(),productId);
         if (cart == null){
             int insert = cartMapper.insert(c);
@@ -114,7 +126,13 @@ public class CartServiceImpl implements CartService {
                         ConstCode.CartEnum.FAIL_ADDPRODUCT.getCode(),
                         ConstCode.CartEnum.FAIL_ADDPRODUCT.getDesc());
             }else{
-                cart.setQuantity(count);
+                //根据type决定要执行的更新方法
+                if (type == ConstCode.CartEnum.CART_TYPE.getCode()){
+                    cart.setQuantity(count+cart.getQuantity());
+                }else if (type == 1){
+                    cart.setQuantity(count);
+                }
+                //更新数据库中数据
                 int i = cartMapper.updateByPrimaryKey(cart);
                 if (i <= 0){
                     return ServerResponse.defeatedRS(
@@ -123,7 +141,6 @@ public class CartServiceImpl implements CartService {
                 }
             }
         }
-
         //返回封装好的CartVO数据
         //查询登录用户的购物车信息
         ServerResponse<List<Cart>> carList = getCarList(user);
@@ -135,34 +152,92 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public ServerResponse<CartVO> update(Integer productId, Integer count,Integer id) {
-        //参数非空判断
-        if (productId == null || productId <=0 || count == null || count <=0){
-            return ServerResponse.defeatedRS("非法参数");
+    public ServerResponse update(Integer productId, Integer count,Integer type,User user) {
+        //参数合法判断
+        if (productId == null || productId < 0){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,ConstCode.UNLAWFULNESS_PARAM);
         }
-        //如果有这条购物信息，就只更新数量
-        Cart cart = cartMapper.selectByUserIDAndProductID(id, productId);
-        //更新数据
-        cart.setQuantity(count);
-        int i = cartMapper.updateByPrimaryKeySelective(cart);
-        return ServerResponse.successRS(count);
+        if (count == null || count <= 0){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,ConstCode.UNLAWFULNESS_PARAM);
+        }
+        //添加的商品是否在售
+        ServerResponse<Product> online = online(productId);
+        if (!online.isSuccess()){
+            return online;
+        }
+        //查询要更新的数据
+        Cart cart = cartMapper.selectByUserIDAndProductID(user.getId(),productId);
+        //根据type决定要执行的更新方法
+        if (type == ConstCode.CartEnum.CART_TYPE.getCode()){
+            cart.setQuantity(count+cart.getQuantity());
+        }else if (type == 1){
+            cart.setQuantity(count);
+        }
+        //更新数据库中数据
+        int i = cartMapper.updateByPrimaryKey(cart);
+        if (i <= 0){
+            return ServerResponse.defeatedRS(
+                            ConstCode.CartEnum.FAIL_ADDPRODUCT.getCode(),
+                            ConstCode.CartEnum.FAIL_ADDPRODUCT.getDesc());
+                }
+        //返回封装好的CartVO数据
+        //查询登录用户的购物车信息
+        ServerResponse<List<Cart>> carList = getCarList(user);
+        if (!carList.isSuccess()){
+            return carList;
+        }
+        CartVO cartVO = getCartVO(carList.getData());
+        return ServerResponse.successRS(cartVO);
     }
 
     @Override
-    public ServerResponse<CartVO> deleteProduct(String productIds, Integer id) {
-        if (productIds == null || ("").equals(productIds)){
-            return ServerResponse.defeatedRS("非法参数");
+    public ServerResponse delete(Integer productId,User user) {
+        //参数合法判断
+        if (productId == null || productId < 0){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,ConstCode.UNLAWFULNESS_PARAM);
         }
-        //把字符串中的数据放到集合中
-        String[] split = productIds.split(",");
-        List<String> strings = Arrays.asList(split);
-        int i  = cartMapper.deleteByProduct(strings,id);
-        return ServerResponse.successRS(id);
+        //移除购物车中对应的商品
+        int i = cartMapper.deleteByUserIdAndProductId(user.getId(),productId);
+        if (i <= 0){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,"移除商品失败");
+        }
+       return list(user);
     }
 
     @Override
-    public ServerResponse<CartVO> select(Integer id, Integer productId, Integer check) {
-        int i = cartMapper.selectOrUnselect(id,productId,check);
-        return ServerResponse.successRS(id);
+    public ServerResponse deleteAll(User user) {
+        //移除购物车中对应的商品
+        int i = cartMapper.deleteByUserIdAndChecked(user.getId());
+        if (i <= 0){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,"移除商品失败");
+        }
+        return list(user);
+    }
+
+    @Override
+    public ServerResponse getCartProductCount(User user) {
+        List<Cart> cartList = cartMapper.selectByUserID(user.getId());
+        Integer num = 0;
+        for (Cart cart : cartList) {
+            num += cart.getQuantity();
+        }
+        return ServerResponse.successRS(num);
+    }
+
+    @Override
+    public ServerResponse checked(Integer productId,Integer type,User user) {
+        //参数合法判断
+        if (productId != null && productId < 0){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,ConstCode.UNLAWFULNESS_PARAM);
+        }
+        if (type == null || type < 0){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,ConstCode.UNLAWFULNESS_PARAM);
+        }
+        //选中或者取消选中商品
+        int i = cartMapper.updateByUserIdOrProductId(user.getId(),productId,type);
+        if (i <=0){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,"状态更新失败");
+        }
+        return list(user);
     }
 }
