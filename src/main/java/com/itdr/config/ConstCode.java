@@ -134,6 +134,39 @@ public class ConstCode {
         }
     }
 
+    public enum OrderEnum{
+
+        //状态信息
+        INEXISTENCE_ORDER(1, "订单不存在"),
+        MISMATCHING_ORDER(2,"订单不匹配");
+
+
+
+        private int code;
+        private String desc;
+
+        private OrderEnum(int code,String desc){
+            this.code = code;
+            this.desc = desc;
+        }
+        public int getCode() {
+            return code;
+        }
+
+        public void setCode(int code) {
+            this.code = code;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
+
+        public void setDesc(String desc) {
+            this.desc = desc;
+        }
+    }
+
+
 
 
 }
