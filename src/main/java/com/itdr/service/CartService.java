@@ -20,4 +20,7 @@ public interface CartService {
     ServerResponse getCartProductCount(User user);
 
     ServerResponse checked(Integer productId,Integer type,User user);
+
+
+    ServerResponse settlement(User user);
 }

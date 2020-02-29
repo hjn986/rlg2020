@@ -37,7 +37,7 @@ public class AliPayServiceImpl implements AliPayService {
     @Autowired
     PayInfoMapper payInfoMapper;
 
-    //引入官方demo中的当面付2.0生成支付二维码
+    //引入官方demo中的当面付2.0生成支付二维码(支付宝预下单核心方法）
     private AlipayTradePrecreateResponse test_trade_precreate(Order order, List<OrderItem> orderItems) throws AlipayApiException {
         //读取配置文件信息
         Configs.init("zfbinfo.properties");
@@ -167,5 +167,25 @@ public class AliPayServiceImpl implements AliPayService {
         //支付信息保存失败返回结果
         sr = ServerResponse.defeatedRS("SUCCESS");
         return sr;
+    }
+
+    @Override
+    public ServerResponse queryOrderPayStatus(User user, Long orderNo) {
+        //参数判断
+        if (orderNo == null || orderNo < 0) {
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL, ConstCode.UNLAWFULNESS_PARAM);
+        }
+        //判断订单是否存在
+        Order o = orderMapper.selectByOrderNoAndUserId(orderNo,user.getId());
+        if (o == null) {
+            return ServerResponse.defeatedRS(
+                    ConstCode.OrderEnum.INEXISTENCE_ORDER.getCode(),
+                    ConstCode.OrderEnum.INEXISTENCE_ORDER.getDesc());
+        }
+        //判断订单状态
+        if (o.getStatus() != 20) {
+            return ServerResponse.successRS(false);
+        }
+        return ServerResponse.successRS(true);
     }
 }

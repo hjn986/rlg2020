@@ -42,6 +42,12 @@ public class AliPayController {
         return aliPayService.pay(user,orderNo);
     }
 
+    /**
+     * 支付宝回调接口
+     * @param request
+     * @param response
+     * @return
+     */
     @RequestMapping("pay_callback.do")
     public String payCallback(HttpServletRequest request, HttpServletResponse response){
 
@@ -97,5 +103,20 @@ public class AliPayController {
             return "FAILED";
             }
 
+    }
+
+    /**
+     * 查询订单状态
+     * @param session
+     * @param orderNo
+     * @return
+     */
+    @RequestMapping("query_order_pay_status.do")
+    public ServerResponse queryOrderPayStatus(HttpSession session,Long orderNo){
+        User user = (User) session.getAttribute("user");
+        if (user == null){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,ConstCode.UserEnum.NO_LOGIN.getDesc());
+        }
+        return aliPayService.queryOrderPayStatus(user,orderNo);
     }
 }

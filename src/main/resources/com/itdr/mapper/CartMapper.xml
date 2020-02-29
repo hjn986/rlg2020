@@ -50,7 +50,13 @@
     delete from rlg_cart
     where user_id = #{uid,jdbcType=INTEGER} and checked = 1
   </delete>
-  <!--增加购物车信息-->
+  <!--删除购物车中全部数据-->
+    <delete id="deleteByUserId">
+    delete from rlg_cart
+    where user_id = #{uid,jdbcType=INTEGER}
+    </delete>
+
+    <!--增加购物车信息-->
     <insert id="insert" parameterType="com.itdr.pojo.Cart" >
     insert into rlg_cart (id, user_id, product_id, 
       quantity, checked, create_time, 

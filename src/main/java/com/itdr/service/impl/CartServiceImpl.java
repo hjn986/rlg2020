@@ -29,7 +29,7 @@ public class CartServiceImpl implements CartService {
     @Autowired
     ProductMapper productMapper;
     //获取cartVO对象
-    private CartVO getCartVO(List<Cart> cartList) {
+    protected CartVO getCartVO(List<Cart> cartList) {
         //获取购物车中对应的商品信息
         List<CartProductVO> cartProductVOList = new ArrayList<CartProductVO>();
         boolean bol = true;
@@ -239,5 +239,29 @@ public class CartServiceImpl implements CartService {
             return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,"状态更新失败");
         }
         return list(user);
+    }
+
+    @Override
+    public ServerResponse settlement(User user) {
+        //判断当前用户购物车中有没有数据
+        List<Cart> cartList = cartMapper.selectByUserID(user.getId());
+        if (cartList.size() == 0){
+            return ServerResponse.defeatedRS(
+                    ConstCode.CartEnum.EMPTY_CART.getCode(),
+                    ConstCode.CartEnum.EMPTY_CART.getDesc());
+        }
+        //购物车中的商品有没有被选中
+        boolean bol = false;
+        for (Cart cart : cartList) {
+            if (cart.getChecked() == 1){
+                bol = true;
+            }
+        }
+        if (!bol){
+            return ServerResponse.defeatedRS(
+                    ConstCode.CartEnum.NOSELECT_PRODUCT.getCode(),
+                    ConstCode.CartEnum.NOSELECT_PRODUCT.getDesc());
+        }
+        return ServerResponse.successRS(true);
     }
 }

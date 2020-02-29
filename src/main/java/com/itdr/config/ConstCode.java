@@ -105,9 +105,10 @@ public class ConstCode {
     public enum CartEnum{
 
         //状态信息
+        CART_TYPE(0,"类型"),
         EMPTY_CART(1, "购物车竟然是空的"),
         FAIL_ADDPRODUCT(2,"添加商品失败"),
-        CART_TYPE(0,"类型");
+        NOSELECT_PRODUCT(3,"没有选中的商品");
 
 
         private int code;

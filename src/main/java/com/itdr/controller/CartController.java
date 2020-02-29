@@ -5,6 +5,7 @@ import com.itdr.config.ConstCode;
 import com.itdr.pojo.User;
 import com.itdr.pojo.vo.CartVO;
 import com.itdr.service.CartService;
+import com.itdr.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +21,8 @@ public class CartController {
 
     @Autowired
     CartService cartService;
+
+
 
     /**
      * 查看购物车列表
@@ -134,6 +137,20 @@ public class CartController {
                     ConstCode.UserEnum.NO_LOGIN.getDesc());
         }
         return cartService.checked(productId,type,user);
+    }
+
+    /**
+     * 购物车去结算
+     * @param session
+     * @return
+     */
+    @RequestMapping("settlement.do")
+    public ServerResponse settlement(HttpSession session){
+        User user =(User) session.getAttribute("user");
+        if (user == null){
+            return ServerResponse.defeatedRS(ConstCode.DEFAULT_FAIL,ConstCode.UserEnum.NO_LOGIN.getDesc()) ;
+        }
+        return cartService.settlement(user);
     }
 
 
