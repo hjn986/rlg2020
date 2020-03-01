@@ -2,19 +2,22 @@ package com.itdr.service.impl;
 
 import com.itdr.common.ServerResponse;
 import com.itdr.config.ConstCode;
-import com.itdr.mapper.CartMapper;
-import com.itdr.mapper.OrderItemMapper;
-import com.itdr.mapper.OrderMapper;
-import com.itdr.mapper.ProductMapper;
+import com.itdr.mapper.*;
 import com.itdr.pojo.*;
 import com.itdr.pojo.vo.CartVO;
+import com.itdr.pojo.vo.OrderItemVO;
+import com.itdr.pojo.vo.OrderVO;
+import com.itdr.pojo.vo.ShippingVO;
 import com.itdr.service.CartService;
 import com.itdr.service.OrderService;
 import com.itdr.utils.BigDecimalUtil;
+import com.itdr.utils.ObjectToVOUtil;
+import com.itdr.utils.PropertiesUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -34,6 +37,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     OrderItemMapper orderItemMapper;
+
+    @Autowired
+    ShippingMapper shippingMapper;
 
     //订单编号生成规则
     private Long getNo(){
@@ -74,6 +80,7 @@ public class OrderServiceImpl implements OrderService {
             return ServerResponse.defeatedRS("订单创建失败");
         }
         //创建订单详情
+        List<OrderItemVO> itemVOList = new ArrayList<OrderItemVO>();
         for (Cart cart : cartList) {
             OrderItem orderItem = new OrderItem();
             orderItem.setUserId(user.getId());
@@ -94,11 +101,37 @@ public class OrderServiceImpl implements OrderService {
             if (i2 <= 0){
                 return ServerResponse.defeatedRS("订单详情创建失败");
             }
+            OrderItemVO orderItemVO = ObjectToVOUtil.orderItemToOrderItemVO(orderItem);
+            itemVOList.add(orderItemVO);
         }
         //清空购物车数据
         int i3 = cartMapper.deleteByUserId(user.getId());
         //返回成功数据
-        return null;
+        Shipping shipping = shippingMapper.selectByPrimaryKey(shippingId);
+        if (shipping == null){
+            return ServerResponse.defeatedRS("地址不存在");
+        }
+        ShippingVO shippingVO = ObjectToVOUtil.shippingToShippingVO(shipping);
+        OrderVO orderVO = getOrderVO(o, shippingId, itemVOList, shippingVO);
+
+        return ServerResponse.successRS(orderVO);
+    }
+
+
+
+    private  OrderVO getOrderVO(Order o, Integer shippingId, List<OrderItemVO> list, ShippingVO shippingVO){
+        OrderVO orderVO = new OrderVO();
+        orderVO.setOrderNo(o.getOrderNo());
+        orderVO.setShippingId(shippingId);
+        orderVO.setPayment(o.getPayment());
+        orderVO.setPaymentType(o.getPaymentType());
+        orderVO.setPostage(o.getPostage());
+        orderVO.setStatus(o.getStatus());
+        orderVO.setOrderItemVOList(list);
+        orderVO.setShippingVO(shippingVO);
+        orderVO.setImageHost(PropertiesUtil.getValue("ImageHost"));
+
+        return orderVO;
     }
 
 

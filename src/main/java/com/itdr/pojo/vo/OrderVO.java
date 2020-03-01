@@ -12,6 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class OrderVO {
+
     private Long orderNo;
 
     private Integer shippingId;
